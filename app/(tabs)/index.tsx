@@ -19,6 +19,7 @@ export default function LibraryScreen() {
     tracks,
     loadTracks,
     playTrack,
+    pauseTrack,
     currentTrack,
     isPlaying,
     permissionGranted,
@@ -32,7 +33,13 @@ export default function LibraryScreen() {
   }, [permissionGranted]);
 
   const handleTrackPress = (track: Track) => {
-    playTrack(track); // Gère maintenant la pause et la lecture
+    if (currentTrack?.id === track.id && isPlaying) {
+      // Si le morceau actuel est en lecture, alors on met en pause
+      pauseTrack();
+    } else {
+      // Si c'est un autre morceau ou si aucun morceau n'est en lecture, on commence la lecture
+      playTrack(track);
+    }
   };
 
   const handleRequestPermission = async () => {

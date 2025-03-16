@@ -1,20 +1,27 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions, ActivityIndicator } from "react-native"
-import { Ionicons } from "@expo/vector-icons"
-import { useRouter } from "expo-router"
-import type { Track } from "../hooks/useAudioPlayer"
+import type React from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Dimensions,
+  ActivityIndicator,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import type { Track } from "../hooks/useAudioPlayer";
 
-const { width } = Dimensions.get("window")
+const { width } = Dimensions.get("window");
 
 interface MiniPlayerProps {
-  currentTrack: Track | null
-  isPlaying: boolean
-  onPlayPause: () => void
-  playbackPosition: number
-  playbackDuration: number
-  isLoading?: boolean
+  currentTrack: Track | null;
+  isPlaying: boolean;
+  onPlayPause: () => void;
+  playbackPosition: number;
+  playbackDuration: number;
+  isLoading?: boolean;
 }
 
 const MiniPlayer: React.FC<MiniPlayerProps> = ({
@@ -25,20 +32,30 @@ const MiniPlayer: React.FC<MiniPlayerProps> = ({
   playbackDuration,
   isLoading = false,
 }) => {
-  const router = useRouter()
+  const router = useRouter();
 
-  if (!currentTrack) return null
+  if (!currentTrack) return null;
 
   // Calculate progress percentage
-  const progress = playbackDuration > 0 ? (playbackPosition / playbackDuration) * 100 : 0
+  const progress =
+    playbackDuration > 0 ? (playbackPosition / playbackDuration) * 100 : 0;
 
   return (
-    <TouchableOpacity style={styles.container} onPress={() => router.push("/(tabs)/player")} activeOpacity={0.9}>
+    <TouchableOpacity
+      style={styles.container}
+      onPress={() => router.push("/(tabs)/player")}
+      activeOpacity={0.9}
+    >
       <View style={[styles.progressBar, { width: `${progress}%` }]} />
 
       <View style={styles.content}>
         <View style={styles.trackInfo}>
-          <Ionicons name="musical-note" size={24} color="#6200ee" style={styles.noteIcon} />
+          <Ionicons
+            name="musical-note"
+            size={24}
+            color="#6200ee"
+            style={styles.noteIcon}
+          />
 
           <View style={styles.infoContainer}>
             <Text style={styles.title} numberOfLines={1}>
@@ -51,18 +68,26 @@ const MiniPlayer: React.FC<MiniPlayerProps> = ({
         </View>
 
         <View style={styles.controls}>
-          <TouchableOpacity style={styles.playPauseButton} onPress={onPlayPause} disabled={isLoading}>
+          <TouchableOpacity
+            style={styles.playPauseButton}
+            onPress={onPlayPause}
+            disabled={isLoading}
+          >
             {isLoading ? (
               <ActivityIndicator size="small" color="#6200ee" />
             ) : (
-              <Ionicons name={isPlaying ? "pause" : "play"} size={24} color="#6200ee" />
+              <Ionicons
+                name={isPlaying ? "pause" : "play"}
+                size={24}
+                color="#6200ee"
+              />
             )}
           </TouchableOpacity>
         </View>
       </View>
     </TouchableOpacity>
-  )
-}
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -123,7 +148,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-})
+});
 
-export default MiniPlayer
-
+export default MiniPlayer;
