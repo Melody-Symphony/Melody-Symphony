@@ -5,8 +5,6 @@
     <img align="center" src="./assets/default-album.png" height="300" />
 </p>
 
-<h2 >Melody</h2>
-
 <h4 align="center">
    🎹 I just wanna be part of your Symphony!!! 🎻
     <br/>
