@@ -15,7 +15,9 @@
 
 ## 💡 A propos de l'application
 
-**Melody** est une application de musique immersive qui vous permet de découvrir et de créer des mélodies. La musique est une langue universelle, et avec Melody, vous pouvez vous connecter à cette magie à travers des animations, des effets visuels et bien plus !
+Melody est une application de musique immersive qui vous permet de découvrir et de créer des mélodies.
+La musique est une langue universelle, et avec Melody, vous pouvez vous connecter à cette magie à travers des animations, des effets visuels et bien plus !
+ <strong>Écoutez et gérez votre musiquelocale</strong>, explorez de nouvelles mélodies et laissez-vous emporter par l'expérience musicale.
 
 ---
 
