@@ -2,6 +2,7 @@
     <image src="./assets/default-album.png" height="300" />
 </p>
 <h1 align="center">Melody</h1>
-<h1 align="center">
+<h3 align="center">
    🎹 I just wanna be part of your Symphony !!!🎻
-</h1>
+    💘 Welcome to our Melody💘
+</h3>
