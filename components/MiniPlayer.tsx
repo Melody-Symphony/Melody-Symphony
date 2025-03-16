@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from "react-native"
+import { View, Text, StyleSheet, TouchableOpacity, Dimensions, ActivityIndicator } from "react-native"
 import { Ionicons } from "@expo/vector-icons"
 import { useRouter } from "expo-router"
 import type { Track } from "../hooks/useAudioPlayer"
@@ -14,6 +14,7 @@ interface MiniPlayerProps {
   onPlayPause: () => void
   playbackPosition: number
   playbackDuration: number
+  isLoading?: boolean
 }
 
 const MiniPlayer: React.FC<MiniPlayerProps> = ({
@@ -22,6 +23,7 @@ const MiniPlayer: React.FC<MiniPlayerProps> = ({
   onPlayPause,
   playbackPosition,
   playbackDuration,
+  isLoading = false,
 }) => {
   const router = useRouter()
 
@@ -31,22 +33,30 @@ const MiniPlayer: React.FC<MiniPlayerProps> = ({
   const progress = playbackDuration > 0 ? (playbackPosition / playbackDuration) * 100 : 0
 
   return (
-    <TouchableOpacity style={styles.container} onPress={() => router.push("/player")}>
+    <TouchableOpacity style={styles.container} onPress={() => router.push("/(tabs)/player")} activeOpacity={0.9}>
       <View style={[styles.progressBar, { width: `${progress}%` }]} />
 
       <View style={styles.content}>
-        <View style={styles.infoContainer}>
-          <Text style={styles.title} numberOfLines={1}>
-            {currentTrack.title || currentTrack.filename}
-          </Text>
-          <Text style={styles.artist} numberOfLines={1}>
-            {currentTrack.artist || "Unknown Artist"}
-          </Text>
+        <View style={styles.trackInfo}>
+          <Ionicons name="musical-note" size={24} color="#6200ee" style={styles.noteIcon} />
+
+          <View style={styles.infoContainer}>
+            <Text style={styles.title} numberOfLines={1}>
+              {currentTrack.title || currentTrack.filename}
+            </Text>
+            <Text style={styles.artist} numberOfLines={1}>
+              {currentTrack.artist || "Unknown Artist"}
+            </Text>
+          </View>
         </View>
 
         <View style={styles.controls}>
-          <TouchableOpacity style={styles.playPauseButton} onPress={onPlayPause}>
-            <Ionicons name={isPlaying ? "pause" : "play"} size={24} color="#6200ee" />
+          <TouchableOpacity style={styles.playPauseButton} onPress={onPlayPause} disabled={isLoading}>
+            {isLoading ? (
+              <ActivityIndicator size="small" color="#6200ee" />
+            ) : (
+              <Ionicons name={isPlaying ? "pause" : "play"} size={24} color="#6200ee" />
+            )}
           </TouchableOpacity>
         </View>
       </View>
@@ -59,7 +69,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     bottom: 49, // Just above the tab bar
     width: width,
-    height: 60,
+    height: 65,
     backgroundColor: "white",
     borderTopWidth: 1,
     borderTopColor: "#eee",
@@ -77,16 +87,25 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "space-between",
     paddingHorizontal: 16,
+  },
+  trackInfo: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
+  },
+  noteIcon: {
+    marginRight: 12,
   },
   infoContainer: {
     flex: 1,
-    marginRight: 16,
   },
   title: {
     fontSize: 14,
-    fontWeight: "500",
+    fontWeight: "600",
     color: "#333",
+    marginBottom: 2,
   },
   artist: {
     fontSize: 12,

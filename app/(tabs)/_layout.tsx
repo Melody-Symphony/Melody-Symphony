@@ -4,7 +4,8 @@ import MiniPlayer from "../../components/MiniPlayer"
 import { useAudioPlayer } from "../../hooks/useAudioPlayer"
 
 export default function TabLayout() {
-  const { currentTrack, isPlaying, playbackPosition, playbackDuration, pauseTrack, resumeTrack } = useAudioPlayer()
+  const { currentTrack, isPlaying, playbackPosition, playbackDuration, pauseTrack, resumeTrack, isLoading } =
+    useAudioPlayer()
 
   const handlePlayPause = () => {
     if (isPlaying) {
@@ -19,6 +20,17 @@ export default function TabLayout() {
       <Tabs
         screenOptions={{
           tabBarActiveTintColor: "#6200ee",
+          tabBarStyle: {
+            height: 50,
+            paddingBottom: 5,
+          },
+          headerStyle: {
+            backgroundColor: "#6200ee",
+          },
+          headerTintColor: "#fff",
+          headerTitleStyle: {
+            fontWeight: "bold",
+          },
         }}
       >
         <Tabs.Screen
@@ -29,10 +41,11 @@ export default function TabLayout() {
           }}
         />
         <Tabs.Screen
-          name="explore"
+          name="player"
           options={{
-            title: "Explore",
-            tabBarIcon: ({ color, size }) => <Ionicons name="compass-outline" size={size} color={color} />,
+            title: "Now Playing",
+            tabBarIcon: ({ color, size }) => <Ionicons name="musical-notes-outline" size={size} color={color} />,
+            headerShown: false,
           }}
         />
         <Tabs.Screen
@@ -51,6 +64,7 @@ export default function TabLayout() {
           onPlayPause={handlePlayPause}
           playbackPosition={playbackPosition}
           playbackDuration={playbackDuration}
+          isLoading={isLoading}
         />
       )}
     </>

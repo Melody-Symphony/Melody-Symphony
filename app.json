@@ -1,30 +1,32 @@
 {
   "expo": {
-    "name": "Music Player",
-    "slug": "music-player",
+    "name": "Melody",
+    "slug": "melody",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/music.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/splash.png",
+      "image": "./assets/music.png",
       "resizeMode": "contain",
       "backgroundColor": "#6200ee"
     },
     "assetBundlePatterns": ["**/*"],
     "ios": {
-      "supportsTablet": true,
       "infoPlist": {
-        "UIBackgroundModes": ["audio"]
-      }
+        "UIBackgroundModes": ["audio", "audio"]
+      },
+      "bundleIdentifier": "com.mariatoavina.musicplayer"
     },
     "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#6200ee"
-      },
-      "permissions": ["READ_EXTERNAL_STORAGE", "READ_MEDIA_AUDIO"],
-      "package": "com.yourname.musicplayer"
+      "permissions": [
+        "READ_EXTERNAL_STORAGE",
+        "READ_MEDIA_AUDIO",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.ACCESS_MEDIA_LOCATION"
+      ],
+      "package": "com.mariatoavina.musicplayer"
     },
     "plugins": [
       [
@@ -36,19 +38,10 @@
         }
       ]
     ],
-    "android": {
-      "permissions": [
-        "READ_EXTERNAL_STORAGE",
-        "READ_MEDIA_AUDIO"
-      ]
-    },
-    "ios": {
-      "infoPlist": {
-        "UIBackgroundModes": [
-          "audio"
-        ]
+    "extra": {
+      "eas": {
+        "projectId": "2f9ca2e5-2262-497a-8739-e1e0e5e73e01"
       }
     }
   }
 }
-

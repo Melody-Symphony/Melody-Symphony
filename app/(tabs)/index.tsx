@@ -7,10 +7,12 @@ import {
   StyleSheet,
   FlatList,
   TouchableOpacity,
+  ActivityIndicator,
 } from "react-native";
 import { Track, useAudioPlayer } from "../../hooks/useAudioPlayer";
 import TrackItem from "../../components/TrackItem";
 import { StatusBar } from "expo-status-bar";
+import { Ionicons } from "@expo/vector-icons";
 
 export default function LibraryScreen() {
   const {
@@ -20,6 +22,7 @@ export default function LibraryScreen() {
     currentTrack,
     isPlaying,
     permissionGranted,
+    isLoading,
   } = useAudioPlayer();
 
   useEffect(() => {
@@ -29,16 +32,32 @@ export default function LibraryScreen() {
   }, [permissionGranted]);
 
   const handleTrackPress = (track: Track) => {
-    playTrack(track);
+    playTrack(track); // Gère maintenant la pause et la lecture
+  };
+
+  const handleRequestPermission = async () => {
+    // This will trigger the permission request again
+    loadTracks();
   };
 
   if (!permissionGranted) {
     return (
       <View style={styles.permissionContainer}>
+        <StatusBar style="light" />
+        <Ionicons
+          name="musical-notes"
+          size={80}
+          color="#6200ee"
+          style={styles.permissionIcon}
+        />
+        <Text style={styles.permissionTitle}>Music Access Required</Text>
         <Text style={styles.permissionText}>
-          Media library permission is required to access your music.
+          Media library permission is required to access your music files.
         </Text>
-        <TouchableOpacity style={styles.permissionButton}>
+        <TouchableOpacity
+          style={styles.permissionButton}
+          onPress={handleRequestPermission}
+        >
           <Text style={styles.permissionButtonText}>Grant Permission</Text>
         </TouchableOpacity>
       </View>
@@ -47,12 +66,32 @@ export default function LibraryScreen() {
 
   return (
     <View style={styles.container}>
-      <StatusBar style="auto" />
-      <Text style={styles.title}>Your Music Library</Text>
+      <StatusBar style="light" />
 
-      {tracks.length === 0 ? (
+      <View style={styles.header}>
+        <Text style={styles.title}>Your Music Library</Text>
+        <TouchableOpacity style={styles.refreshButton} onPress={loadTracks}>
+          <Ionicons name="refresh" size={22} color="white" />
+        </TouchableOpacity>
+      </View>
+
+      {isLoading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#6200ee" />
+          <Text style={styles.loadingText}>Loading your music...</Text>
+        </View>
+      ) : tracks.length === 0 ? (
         <View style={styles.emptyContainer}>
+          <Ionicons
+            name="musical-notes"
+            size={60}
+            color="#6200ee"
+            style={styles.emptyIcon}
+          />
           <Text style={styles.emptyText}>No audio files found</Text>
+          <Text style={styles.emptySubtext}>
+            Add music files to your device or check your storage permissions
+          </Text>
           <TouchableOpacity style={styles.refreshButton} onPress={loadTracks}>
             <Text style={styles.refreshButtonText}>Refresh</Text>
           </TouchableOpacity>
@@ -81,30 +120,62 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#f5f5f5",
   },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: "#6200ee",
+    paddingVertical: 15,
+    paddingHorizontal: 16,
+  },
   title: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: "bold",
-    margin: 16,
-    color: "#333",
+    color: "white",
+  },
+  refreshButton: {
+    backgroundColor: "rgba(255,255,255,0.2)",
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: "center",
+    justifyContent: "center",
   },
   listContent: {
-    paddingBottom: 100, // Space for mini player
+    paddingBottom: 120, // Space for mini player and tab bar
+    paddingTop: 8,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+  },
+  loadingText: {
+    fontSize: 16,
+    color: "#666",
+    marginTop: 16,
   },
   emptyContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    padding: 20,
   },
-  emptyText: {
-    fontSize: 16,
-    color: "#666",
+  emptyIcon: {
     marginBottom: 16,
   },
-  refreshButton: {
-    backgroundColor: "#6200ee",
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 4,
+  emptyText: {
+    fontSize: 18,
+    color: "#333",
+    fontWeight: "bold",
+    marginBottom: 8,
+  },
+  emptySubtext: {
+    fontSize: 14,
+    color: "#666",
+    textAlign: "center",
+    marginBottom: 24,
   },
   refreshButtonText: {
     color: "white",
@@ -114,22 +185,35 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    padding: 20,
+    padding: 30,
+    backgroundColor: "#f5f5f5",
+  },
+  permissionIcon: {
+    marginBottom: 20,
+  },
+  permissionTitle: {
+    fontSize: 22,
+    fontWeight: "bold",
+    color: "#333",
+    marginBottom: 12,
   },
   permissionText: {
     fontSize: 16,
     color: "#666",
     textAlign: "center",
-    marginBottom: 20,
+    marginBottom: 30,
+    lineHeight: 24,
   },
   permissionButton: {
     backgroundColor: "#6200ee",
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 4,
+    paddingHorizontal: 30,
+    paddingVertical: 12,
+    borderRadius: 50,
+    elevation: 3,
   },
   permissionButtonText: {
     color: "white",
     fontWeight: "bold",
+    fontSize: 16,
   },
 });

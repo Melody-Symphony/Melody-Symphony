@@ -31,12 +31,24 @@ const TrackItem: React.FC<TrackItemProps> = ({
   onOptionsPress,
 }) => {
   return (
-    <TouchableOpacity style={[styles.container, isCurrentTrack && styles.currentTrack]} onPress={onPress}>
+    <TouchableOpacity
+      style={[styles.container, isCurrentTrack && styles.currentTrack]}
+      onPress={onPress}
+      activeOpacity={0.7}
+    >
       <View style={styles.iconContainer}>
-        {isCurrentTrack && isPlaying ? (
-          <Ionicons name="pause" size={24} color="#6200ee" />
+        {isCurrentTrack ? (
+          <View style={styles.playingIndicator}>
+            {isPlaying ? (
+              <Ionicons name="pause" size={22} color="#6200ee" />
+            ) : (
+              <Ionicons name="play" size={22} color="#6200ee" />
+            )}
+          </View>
         ) : (
-          <Ionicons name="musical-note" size={24} color={isCurrentTrack ? "#6200ee" : "#888"} />
+          <View style={styles.trackNumber}>
+            <Ionicons name="musical-note" size={22} color="#888" />
+          </View>
         )}
       </View>
 
@@ -53,7 +65,11 @@ const TrackItem: React.FC<TrackItemProps> = ({
         <Text style={styles.duration}>{formatDuration(track.duration)}</Text>
 
         {showOptions && onOptionsPress && (
-          <TouchableOpacity style={styles.optionsButton} onPress={onOptionsPress}>
+          <TouchableOpacity
+            style={styles.optionsButton}
+            onPress={onOptionsPress}
+            hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }}
+          >
             <Ionicons name="ellipsis-vertical" size={20} color="#888" />
           </TouchableOpacity>
         )}
@@ -70,12 +86,12 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     marginHorizontal: 16,
     marginVertical: 4,
-    borderRadius: 8,
-    elevation: 1,
+    borderRadius: 12,
+    elevation: 2,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
-    shadowRadius: 1,
+    shadowRadius: 2,
   },
   currentTrack: {
     backgroundColor: "#f0e6ff",
@@ -87,10 +103,27 @@ const styles = StyleSheet.create({
     height: 40,
     alignItems: "center",
     justifyContent: "center",
+    marginRight: 4,
+  },
+  playingIndicator: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: "#f0e6ff",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  trackNumber: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: "#f5f5f5",
+    alignItems: "center",
+    justifyContent: "center",
   },
   infoContainer: {
     flex: 1,
-    marginLeft: 12,
+    marginLeft: 8,
   },
   title: {
     fontSize: 16,
