@@ -1,15 +1,15 @@
-# Melody 🎶
+<h1> 🎹Melody🎶</h1> 
 <div align="center">
 <p >
     <img align="center" src="./assets/default-album.png" height="300" />
 </p>
 
-<h1 >Melody</h1>
+<h2 >Melody</h2>
 
 <h3 align="center">
    🎹 I just wanna be part of your Symphony!!! 🎻
     <br/>
-    <h4 align="center" >💘 Welcome to our Melody 💘</h4>
+    <h5 align="center" >💘 Welcome to our Melody 💘</h5>
 </h3>
 </div>
 ---
