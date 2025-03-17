@@ -82,7 +82,15 @@ export default function PlayerScreen() {
         style={styles.gradientBackground}
       />
 
-      <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+      <TouchableOpacity 
+        style={styles.backButton} 
+        onPress={
+          () => {
+            router.back()
+            pauseTrack
+          }
+        }
+      >
         <Ionicons name="chevron-down" size={28} color="white" />
       </TouchableOpacity>
 
@@ -157,7 +165,15 @@ export default function PlayerScreen() {
           )}
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={playNextTrack} style={styles.controlButton}>
+        <TouchableOpacity 
+          onPress={
+            () => {
+              pauseTrack
+              playNextTrack
+            }
+          } 
+          style={styles.controlButton}
+        >
           <Ionicons name="play-skip-forward" size={32} color="white" />
         </TouchableOpacity>
       </View>
