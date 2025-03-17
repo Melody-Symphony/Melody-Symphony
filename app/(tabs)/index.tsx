@@ -21,6 +21,7 @@ export default function LibraryScreen() {
     playTrack,
     pauseTrack,
     currentTrack,
+    setCurrentTrack,
     isPlaying,
     permissionGranted,
     isLoading,
@@ -38,6 +39,8 @@ export default function LibraryScreen() {
       pauseTrack();
     } else {
       // Si c'est un autre morceau ou si aucun morceau n'est en lecture, on commence la lecture
+      pauseTrack()
+      setCurrentTrack(track)
       playTrack(track);
     }
   };

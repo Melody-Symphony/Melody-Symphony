@@ -86,8 +86,8 @@ export default function PlayerScreen() {
         style={styles.backButton} 
         onPress={
           () => {
-            router.back()
             pauseTrack
+            router.back()
           }
         }
       >

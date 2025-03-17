@@ -622,6 +622,7 @@ export function useAudioPlayer() {
     tracks,
     playlists,
     currentTrack,
+    setCurrentTrack,
     isPlaying,
     playbackPosition,
     playbackDuration,
