@@ -4,15 +4,16 @@ import { useState, useEffect, useRef } from "react";
 import { Audio } from "expo-av";
 import * as MediaLibrary from "expo-media-library";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { AppState } from "react-native";
+import { AppState, Platform } from "react-native";
 import * as Notifications from "expo-notifications";
 
-// Configure notifications for media controls
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: false,
     shouldPlaySound: false,
     shouldSetBadge: false,
+    priority: Notifications.AndroidNotificationPriority.MAX,
+    sticky: true,
   }),
 });
 
@@ -42,6 +43,7 @@ export function useAudioPlayer() {
   const [playbackDuration, setPlaybackDuration] = useState(0);
   const [permissionGranted, setPermissionGranted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
 
   const soundRef = useRef<Audio.Sound | null>(null);
   const positionUpdateInterval = useRef<NodeJS.Timeout | null>(null);
@@ -57,14 +59,13 @@ export function useAudioPlayer() {
         const { status } = await MediaLibrary.requestPermissionsAsync();
         console.log("Media library permission status:", status);
         setPermissionGranted(status === "granted");
-
+        
+        // Setup audio mode for background playback
         if (status === "granted") {
-          // Setup audio mode for background playback
           await Audio.setAudioModeAsync({
             allowsRecordingIOS: false,
             staysActiveInBackground: true,
             shouldDuckAndroid: true,
-
             playThroughEarpieceAndroid: false,
           });
 
@@ -91,10 +92,15 @@ export function useAudioPlayer() {
             );
             setCurrentTrack(lastTrack);
             setPlaybackPosition(lastPosition);
-          }
 
-          // Setup notifications for media controls
-          await setupNotifications();
+            // Show notification immediately for the last track
+            await setupNotifications();
+            if (lastTrack) {
+              updateNotification(lastTrack, false);
+            }
+          } else {
+            await setupNotifications();
+          }
         }
       } catch (error) {
         console.error("Error during setup:", error);
@@ -119,6 +125,10 @@ export function useAudioPlayer() {
                 setIsPlaying(status.isPlaying);
                 setPlaybackPosition(status.positionMillis);
                 setPlaybackDuration(status.durationMillis || 0);
+
+                if (currentTrack) {
+                  updateNotification(currentTrack, status.isPlaying);
+                }
               }
             })
             .catch((err) => console.error("Error getting sound status:", err));
@@ -127,7 +137,7 @@ export function useAudioPlayer() {
         nextAppState.match(/inactive|background/) &&
         appStateRef.current === "active"
       ) {
-        // App has gone to the background
+        
         console.log("App went to background");
         // Save current track and position
         if (currentTrack) {
@@ -164,10 +174,9 @@ export function useAudioPlayer() {
 
   // Extract basic metadata from filename
   const extractBasicMetadata = (filename: string) => {
-    // Remove file extension
+   
     const nameWithoutExt = filename.replace(/\.[^/.]+$/, "");
 
-    // Try to extract artist and title if in format "Artist - Title"
     const match = nameWithoutExt.match(/^(.*?)\s*-\s*(.*)$/);
 
     if (match) {
@@ -176,8 +185,6 @@ export function useAudioPlayer() {
         title: match[2].trim() || "Unknown Title",
       };
     }
-
-    // If no match, just use the filename as title
     return {
       artist: "Unknown Artist",
       title: nameWithoutExt || "Unknown Title",
@@ -195,75 +202,93 @@ export function useAudioPlayer() {
         const { status: newStatus } =
           await Notifications.requestPermissionsAsync();
         console.log("Notification permission status:", newStatus);
+        setNotificationsEnabled(newStatus === "granted");
+      } else {
+        setNotificationsEnabled(true);
       }
 
       // Configure notification categories for media controls
-      await Notifications.setNotificationCategoryAsync("playback", [
-        {
-          identifier: "play",
-          buttonTitle: "Play",
-          options: {
-            isDestructive: false,
-            isAuthenticationRequired: false,
+      if (Platform.OS === "ios") {
+        await Notifications.setNotificationCategoryAsync("playback", [
+          {
+            identifier: "play",
+            buttonTitle: "Play",
+            options: {
+              isDestructive: false,
+              isAuthenticationRequired: false,
+            },
           },
-        },
-        {
-          identifier: "pause",
-          buttonTitle: "Pause",
-          options: {
-            isDestructive: false,
-            isAuthenticationRequired: false,
+          {
+            identifier: "pause",
+            buttonTitle: "Pause",
+            options: {
+              isDestructive: false,
+              isAuthenticationRequired: false,
+            },
           },
-        },
-        {
-          identifier: "next",
-          buttonTitle: "Next",
-          options: {
-            isDestructive: false,
-            isAuthenticationRequired: false,
+          {
+            identifier: "next",
+            buttonTitle: "Next",
+            options: {
+              isDestructive: false,
+              isAuthenticationRequired: false,
+            },
           },
-        },
-        {
-          identifier: "prev",
-          buttonTitle: "Previous",
-          options: {
-            isDestructive: false,
-            isAuthenticationRequired: false,
+          {
+            identifier: "prev",
+            buttonTitle: "Previous",
+            options: {
+              isDestructive: false,
+              isAuthenticationRequired: false,
+            },
           },
-        },
-      ]);
+        ]);
+      }
 
       // Set up notification response handler
-      Notifications.addNotificationResponseReceivedListener((response) => {
-        const { actionIdentifier } = response;
+      const subscription =
+        Notifications.addNotificationResponseReceivedListener((response) => {
+          const { actionIdentifier } = response;
 
-        console.log("Notification action received:", actionIdentifier);
+          console.log("Notification action received:", actionIdentifier);
 
-        switch (actionIdentifier) {
-          case "play":
-            resumeTrack();
-            break;
-          case "pause":
-            pauseTrack();
-            break;
-          case "next":
-            playNextTrack();
-            break;
-          case "prev":
-            playPreviousTrack();
-            break;
-        }
-      });
+          switch (actionIdentifier) {
+            case "play":
+              resumeTrack();
+              break;
+            case "pause":
+              pauseTrack();
+              break;
+            case "next":
+              playNextTrack();
+              break;
+            case "prev":
+              playPreviousTrack();
+              break;
+            default:
+              break;
+          }
+        });
 
       console.log("Notifications setup complete");
+
+      return () => {
+        subscription.remove();
+      };
     } catch (error) {
       console.error("Error setting up notifications:", error);
+      setNotificationsEnabled(false);
     }
   };
 
   // Update notification with current track info
   const updateNotification = async (track: Track, isPlaying: boolean) => {
     try {
+      if (!notificationsEnabled) {
+        console.log("Notifications not enabled, skipping update");
+        return;
+      }
+
       console.log(
         "Updating notification for track:",
         track.title,
@@ -273,18 +298,56 @@ export function useAudioPlayer() {
 
       await Notifications.dismissAllNotificationsAsync();
 
-      await Notifications.scheduleNotificationAsync({
-        content: {
-          title: track.title || track.filename,
-          body: `${track.artist || "Unknown Artist"} • ${
-            track.album || "Unknown Album"
-          }`,
-          data: { trackId: track.id },
-          categoryIdentifier: "playback",
-          sticky: true,
-        },
-        trigger: null,
-      });
+      
+      if (Platform.OS === "android") {
+        
+        await Notifications.scheduleNotificationAsync({
+          content: {
+            title: track.title || track.filename,
+            body: `${track.artist || "Unknown Artist"} • ${
+              track.album || "Unknown Album"
+            }`,
+            data: { trackId: track.id },
+            
+            actions: [
+              { id: "prev", title: "Previous", icon: "ic_prev" },
+              {
+                id: isPlaying ? "pause" : "play",
+                title: isPlaying ? "Pause" : "Play",
+                icon: isPlaying ? "ic_pause" : "ic_play",
+              },
+              { id: "next", title: "Next", icon: "ic_next" },
+            ],
+            
+            color: "#6200ee",
+            
+            priority: "max",
+         
+            sticky: true,
+            
+            ongoing: true,
+            
+            style: "media",
+            
+            ...(track.artwork && { largeIcon: track.artwork }),
+          },
+          trigger: null,
+        });
+      } else {
+        // iOS has more limitations
+        await Notifications.scheduleNotificationAsync({
+          content: {
+            title: track.title || track.filename,
+            body: `${track.artist || "Unknown Artist"} • ${
+              track.album || "Unknown Album"
+            }`,
+            data: { trackId: track.id },
+            categoryIdentifier: "playback",
+            sticky: true,
+          },
+          trigger: null,
+        });
+      }
 
       console.log("Notification updated successfully");
     } catch (error) {
@@ -396,7 +459,6 @@ export function useAudioPlayer() {
     }, 1000);
   };
 
-  // Remplacer la fonction togglePlayPause par cette version complètement réécrite
   // Toggle play/pause for a track
   const togglePlayPause = async (track?: Track) => {
     try {
@@ -405,7 +467,7 @@ export function useAudioPlayer() {
       console.log("Current track:", currentTrack?.title || "none");
       console.log("Current playing state:", isPlaying);
 
-      // Cas 1: Aucune piste fournie, basculer l'état actuel
+      // Case 1: No track provided, toggle current state
       if (!track) {
         console.log("No track provided, toggling current state");
         if (isPlaying) {
@@ -416,7 +478,7 @@ export function useAudioPlayer() {
         return;
       }
 
-      // Cas 2: Piste fournie est la piste actuelle
+      // Case 2: Track provided is the current track
       if (currentTrack && currentTrack.id === track.id) {
         console.log("Track is current track, toggling play state");
         if (isPlaying) {
@@ -427,7 +489,7 @@ export function useAudioPlayer() {
         return;
       }
 
-      // Cas 3: Nouvelle piste, la jouer
+      // Case 3: New track, play it
       console.log("New track, playing it");
       await playTrack(track);
     } catch (error) {
@@ -435,7 +497,6 @@ export function useAudioPlayer() {
     }
   };
 
-  // Remplacer la fonction playTrack par cette version
   // Play a track
   const playTrack = async (track: Track) => {
     try {
@@ -443,7 +504,7 @@ export function useAudioPlayer() {
       console.log("Playing track:", track.title);
       setIsLoading(true);
 
-      // Si c'est la même piste que celle en cours, juste reprendre la lecture
+      // If it's the same track as the current one, just resume playback
       if (currentTrack && currentTrack.id === track.id && soundRef.current) {
         console.log("Same track, resuming playback");
         await resumeTrack();
@@ -474,7 +535,7 @@ export function useAudioPlayer() {
       // Save current track to storage
       await AsyncStorage.setItem("lastPlayingTrack", JSON.stringify(track));
 
-      // Update notification
+      // Update notification immediately
       updateNotification(track, true);
 
       setIsLoading(false);
@@ -485,7 +546,6 @@ export function useAudioPlayer() {
     }
   };
 
-  // Remplacer la fonction pauseTrack par cette version
   // Pause current track
   const pauseTrack = async () => {
     console.log("=== PAUSE TRACK CALLED ===");
@@ -509,7 +569,6 @@ export function useAudioPlayer() {
     }
   };
 
-  // Remplacer la fonction resumeTrack par cette version
   // Resume current track
   const resumeTrack = async () => {
     console.log("=== RESUME TRACK CALLED ===");
@@ -696,6 +755,6 @@ export function useAudioPlayer() {
     deletePlaylist,
     addTrackToPlaylist,
     removeTrackFromPlaylist,
-    togglePlayPause, // Nouvelle fonction pour basculer entre lecture et pause
+    togglePlayPause,
   };
 }

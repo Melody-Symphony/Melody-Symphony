@@ -1,28 +1,37 @@
-"use client"
+"use client";
 
-import { useEffect } from "react"
-import { View, Text, StyleSheet, Image, TouchableOpacity, Dimensions, ActivityIndicator } from "react-native"
-import Slider from "@react-native-community/slider"
-import { Ionicons } from "@expo/vector-icons"
-import { useAudio } from "@/components/AudioContext"
-import { StatusBar } from "expo-status-bar"
-import { useRouter } from "expo-router"
-import { LinearGradient } from "expo-linear-gradient"
+import { useEffect } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  TouchableOpacity,
+  Dimensions,
+  ActivityIndicator,
+} from "react-native";
+import Slider from "@react-native-community/slider";
+import { Ionicons } from "@expo/vector-icons";
+import { useAudio } from "@/components/AudioContext";
+import { StatusBar } from "expo-status-bar";
+import { useRouter } from "expo-router";
+import { LinearGradient } from "expo-linear-gradient";
+import { showMediaNotification } from "@/services/notification-service";
 
-const { width } = Dimensions.get("window")
+const { width } = Dimensions.get("window");
 
 const formatTime = (milliseconds: number) => {
-  if (!milliseconds) return "0:00"
+  if (!milliseconds) return "0:00";
 
-  const totalSeconds = Math.floor(milliseconds / 1000)
-  const minutes = Math.floor(totalSeconds / 60)
-  const seconds = totalSeconds % 60
+  const totalSeconds = Math.floor(milliseconds / 1000);
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
 
-  return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`
-}
+  return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
+};
 
 export default function PlayerScreen() {
-  const router = useRouter()
+  const router = useRouter();
   const {
     currentTrack,
     isPlaying,
@@ -33,35 +42,53 @@ export default function PlayerScreen() {
     playPreviousTrack,
     seekTo,
     isLoading,
-  } = useAudio()
+  } = useAudio();
+
+  // Show notification when track changes or play state changes
+  useEffect(() => {
+    if (currentTrack) {
+      // Update notification whenever the track or play state changes
+      showMediaNotification(currentTrack, isPlaying);
+    }
+  }, [currentTrack, isPlaying]);
 
   // Ensure the screen updates when playback position changes
   useEffect(() => {
     // This effect is just to make sure the component re-renders
     // when playbackPosition changes
-  }, [playbackPosition, isPlaying])
+  }, [playbackPosition, isPlaying]);
 
   if (!currentTrack) {
     return (
       <View style={styles.noTrackContainer}>
         <StatusBar style="light" />
-        <LinearGradient colors={["#6200ee", "#3700b3"]} style={styles.gradientBackground} />
+        <LinearGradient
+          colors={["#6200ee", "#3700b3"]}
+          style={styles.gradientBackground}
+        />
         <Text style={styles.noTrackText}>No track is currently playing</Text>
-        <TouchableOpacity style={styles.browseButton} onPress={() => router.back()}>
+        <TouchableOpacity
+          style={styles.browseButton}
+          onPress={() => router.back()}
+        >
           <Text style={styles.browseButtonText}>Browse Library</Text>
         </TouchableOpacity>
       </View>
-    )
+    );
   }
 
   // Calculate progress percentage for the progress bar
-  const progress = playbackDuration > 0 ? (playbackPosition / playbackDuration) * 100 : 0
+  const progress =
+    playbackDuration > 0 ? (playbackPosition / playbackDuration) * 100 : 0;
 
   return (
     <View style={styles.container}>
       <StatusBar style="light" />
 
-      <LinearGradient colors={["#6200ee", "#3700b3"]} style={styles.gradientBackground} />
+      <LinearGradient
+        colors={["#6200ee", "#3700b3"]}
+        style={styles.gradientBackground}
+      />
 
       <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
         <Ionicons name="chevron-down" size={28} color="white" />
@@ -69,12 +96,18 @@ export default function PlayerScreen() {
 
       <View style={styles.artworkContainer}>
         <Image
-          source={currentTrack.artwork ? { uri: currentTrack.artwork } : require("../../assets/default-album.png")}
+          source={
+            currentTrack.artwork
+              ? { uri: currentTrack.artwork }
+              : require("../../assets/default-album.png")
+          }
           style={styles.artwork}
         />
 
         {/* Vinyl record effect */}
-        <View style={[styles.vinylRecord, isPlaying && styles.vinylRecordSpinning]}>
+        <View
+          style={[styles.vinylRecord, isPlaying && styles.vinylRecordSpinning]}
+        >
           <View style={styles.vinylCenter} />
         </View>
       </View>
@@ -109,14 +142,17 @@ export default function PlayerScreen() {
       </View>
 
       <View style={styles.controlsContainer}>
-        <TouchableOpacity onPress={playPreviousTrack} style={styles.controlButton}>
+        <TouchableOpacity
+          onPress={playPreviousTrack}
+          style={styles.controlButton}
+        >
           <Ionicons name="play-skip-back" size={32} color="white" />
         </TouchableOpacity>
 
         <TouchableOpacity
           onPress={() => {
-            console.log("=== PLAY/PAUSE PRESSED IN PLAYER SCREEN ===")
-            togglePlayPause(currentTrack)
+            console.log("=== PLAY/PAUSE PRESSED IN PLAYER SCREEN ===");
+            togglePlayPause(currentTrack);
           }}
           style={styles.playPauseButton}
           disabled={isLoading}
@@ -124,7 +160,11 @@ export default function PlayerScreen() {
           {isLoading ? (
             <ActivityIndicator color="#6200ee" size="large" />
           ) : (
-            <Ionicons name={isPlaying ? "pause" : "play"} size={40} color="#6200ee" />
+            <Ionicons
+              name={isPlaying ? "pause" : "play"}
+              size={40}
+              color="#6200ee"
+            />
           )}
         </TouchableOpacity>
 
@@ -143,15 +183,23 @@ export default function PlayerScreen() {
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.extraControlButton}>
-          <Ionicons name="heart-outline" size={24} color="rgba(255,255,255,0.7)" />
+          <Ionicons
+            name="heart-outline"
+            size={24}
+            color="rgba(255,255,255,0.7)"
+          />
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.extraControlButton}>
-          <Ionicons name="share-outline" size={24} color="rgba(255,255,255,0.7)" />
+          <Ionicons
+            name="share-outline"
+            size={24}
+            color="rgba(255,255,255,0.7)"
+          />
         </TouchableOpacity>
       </View>
     </View>
-  )
+  );
 }
 
 const styles = StyleSheet.create({
@@ -311,5 +359,4 @@ const styles = StyleSheet.create({
   extraControlButton: {
     padding: 10,
   },
-})
-
+});

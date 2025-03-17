@@ -74,7 +74,7 @@ export default function LibraryScreen() {
       <StatusBar style="light" />
 
       <View style={styles.header}>
-        <Text style={styles.title}>Your Music Library</Text>
+        <Text style={styles.title}>🎹 Melody 🎶</Text>
         <TouchableOpacity style={styles.refreshButton} onPress={loadTracks}>
           <Ionicons name="refresh" size={22} color="white" />
         </TouchableOpacity>
