@@ -69,6 +69,9 @@ export default function PlayerScreen() {
     );
   }
 
+  console.log("currentTrack: " + currentTrack.filename);
+  
+
   // Calculate progress percentage for the progress bar
   const progress =
     playbackDuration > 0 ? (playbackPosition / playbackDuration) * 100 : 0;
@@ -86,7 +89,7 @@ export default function PlayerScreen() {
         style={styles.backButton} 
         onPress={
           () => {
-            pauseTrack
+            pauseTrack()
             router.back()
           }
         }
@@ -168,8 +171,8 @@ export default function PlayerScreen() {
         <TouchableOpacity 
           onPress={
             () => {
-              pauseTrack
-              playNextTrack
+              pauseTrack()
+              playNextTrack()
             }
           } 
           style={styles.controlButton}
