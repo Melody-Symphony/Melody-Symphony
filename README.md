@@ -32,8 +32,8 @@ Si tu veux essayer l'application en local, voici les étapes à suivre :
 3. Lancer la commande : npm install
 4. Puis: npx expo start
 5. Assurez vous de connecter à un émulateur et avoir une application Expo Go😉
-
-6. 4. Si vous voulez l'apk : eas build --platform android --profile release
+   
+6. Si vous voulez l'apk : ```eas build --platform android --profile release```
 
 ```bash
 git clone https://github.com/Melody-Symphony/Melody-Symphony.git
@@ -41,6 +41,6 @@ cd Melody-Symphony
 npm install
 npx expo start
 ```
-# Si vous voulez un apk de melody
+### Si vous voulez l'apk
 ```
 eas build --platform android --profile release
