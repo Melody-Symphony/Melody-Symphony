@@ -11,28 +11,24 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import type { Track } from "../hooks/useAudioPlayer";
+import { useAudio } from "./AudioContext";
 
 const { width } = Dimensions.get("window");
 
-interface MiniPlayerProps {
-  currentTrack: Track | null;
-  isPlaying: boolean;
-  onPlayPause: () => void;
-  playbackPosition: number;
-  playbackDuration: number;
-  isLoading?: boolean;
-}
-
-const MiniPlayer: React.FC<MiniPlayerProps> = ({
-  currentTrack,
-  isPlaying,
-  onPlayPause,
-  playbackPosition,
-  playbackDuration,
-  isLoading = false,
-}) => {
+const MiniPlayer: React.FC = () => {
   const router = useRouter();
+  const {
+    currentTrack,
+    isPlaying,
+    playbackPosition,
+    playbackDuration,
+    isLoading,
+    togglePlayPause,
+  } = useAudio();
+
+  console.log(
+    `Rendering MiniPlayer: ${currentTrack?.title}, isPlaying: ${isPlaying}`
+  );
 
   if (!currentTrack) return null;
 
@@ -70,7 +66,15 @@ const MiniPlayer: React.FC<MiniPlayerProps> = ({
         <View style={styles.controls}>
           <TouchableOpacity
             style={styles.playPauseButton}
-            onPress={onPlayPause}
+            onPress={(e) => {
+              e.stopPropagation();
+              console.log(
+                `MiniPlayer play/pause button pressed for: ${
+                  currentTrack.title
+                }, current state: ${isPlaying ? "playing" : "paused"}`
+              );
+              togglePlayPause(currentTrack);
+            }}
             disabled={isLoading}
           >
             {isLoading ? (

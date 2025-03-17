@@ -1,35 +1,45 @@
-import type React from "react"
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native"
-import { Ionicons } from "@expo/vector-icons"
-import type { Track } from "../hooks/useAudioPlayer"
+import type React from "react";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { useAudio, type Track } from "./AudioContext";
 
 interface TrackItemProps {
-  track: Track
-  isCurrentTrack?: boolean
-  isPlaying?: boolean
-  onPress: () => void
-  showOptions?: boolean
-  onOptionsPress?: () => void
+  track: Track;
+  onPress: () => void;
+  showOptions?: boolean;
+  onOptionsPress?: () => void;
 }
 
 const formatDuration = (milliseconds: number | undefined) => {
-  if (!milliseconds) return "0:00"
+  if (!milliseconds) return "0:00";
 
-  const totalSeconds = Math.floor(milliseconds / 1000)
-  const minutes = Math.floor(totalSeconds / 60)
-  const seconds = totalSeconds % 60
+  const totalSeconds = Math.floor(milliseconds / 1000);
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
 
-  return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`
-}
+  return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
+};
 
 const TrackItem: React.FC<TrackItemProps> = ({
   track,
-  isCurrentTrack = false,
-  isPlaying = false,
   onPress,
   showOptions = false,
   onOptionsPress,
 }) => {
+  const { currentTrack, isPlaying, togglePlayPause } = useAudio();
+  const isCurrentTrack = currentTrack && currentTrack.id === track.id;
+  const isCurrentlyPlaying = isCurrentTrack && isPlaying;
+
+  console.log(
+    `TrackItem: ${track.title}, isCurrentTrack: ${isCurrentTrack}, isPlaying: ${isCurrentlyPlaying}`
+  );
+
+  const handlePlayPausePress = (e: { stopPropagation: () => void }) => {
+    e.stopPropagation();
+    console.log(`Play/pause button pressed for: ${track.title}`);
+    togglePlayPause(track);
+  };
+
   return (
     <TouchableOpacity
       style={[styles.container, isCurrentTrack && styles.currentTrack]}
@@ -38,13 +48,16 @@ const TrackItem: React.FC<TrackItemProps> = ({
     >
       <View style={styles.iconContainer}>
         {isCurrentTrack ? (
-          <View style={styles.playingIndicator}>
-            {isPlaying ? (
+          <TouchableOpacity
+            style={styles.playingIndicator}
+            onPress={handlePlayPausePress}
+          >
+            {isCurrentlyPlaying ? (
               <Ionicons name="pause" size={22} color="#6200ee" />
             ) : (
               <Ionicons name="play" size={22} color="#6200ee" />
             )}
-          </View>
+          </TouchableOpacity>
         ) : (
           <View style={styles.trackNumber}>
             <Ionicons name="musical-note" size={22} color="#888" />
@@ -53,7 +66,10 @@ const TrackItem: React.FC<TrackItemProps> = ({
       </View>
 
       <View style={styles.infoContainer}>
-        <Text style={[styles.title, isCurrentTrack && styles.currentText]} numberOfLines={1}>
+        <Text
+          style={[styles.title, isCurrentTrack && styles.currentText]}
+          numberOfLines={1}
+        >
           {track.title || track.filename}
         </Text>
         <Text style={styles.artist} numberOfLines={1}>
@@ -75,8 +91,8 @@ const TrackItem: React.FC<TrackItemProps> = ({
         )}
       </View>
     </TouchableOpacity>
-  )
-}
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -151,7 +167,6 @@ const styles = StyleSheet.create({
   optionsButton: {
     padding: 8,
   },
-})
+});
 
-export default TrackItem
-
+export default TrackItem;

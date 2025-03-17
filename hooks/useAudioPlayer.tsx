@@ -64,6 +64,7 @@ export function useAudioPlayer() {
             allowsRecordingIOS: false,
             staysActiveInBackground: true,
             shouldDuckAndroid: true,
+
             playThroughEarpieceAndroid: false,
           });
 
@@ -395,16 +396,66 @@ export function useAudioPlayer() {
     }, 1000);
   };
 
+  // Remplacer la fonction togglePlayPause par cette version complètement réécrite
+  // Toggle play/pause for a track
+  const togglePlayPause = async (track?: Track) => {
+    try {
+      console.log("=== TOGGLE PLAY/PAUSE CALLED ===");
+      console.log("Track provided:", track?.title || "none");
+      console.log("Current track:", currentTrack?.title || "none");
+      console.log("Current playing state:", isPlaying);
+
+      // Cas 1: Aucune piste fournie, basculer l'état actuel
+      if (!track) {
+        console.log("No track provided, toggling current state");
+        if (isPlaying) {
+          await pauseTrack();
+        } else if (currentTrack) {
+          await resumeTrack();
+        }
+        return;
+      }
+
+      // Cas 2: Piste fournie est la piste actuelle
+      if (currentTrack && currentTrack.id === track.id) {
+        console.log("Track is current track, toggling play state");
+        if (isPlaying) {
+          await pauseTrack();
+        } else {
+          await resumeTrack();
+        }
+        return;
+      }
+
+      // Cas 3: Nouvelle piste, la jouer
+      console.log("New track, playing it");
+      await playTrack(track);
+    } catch (error) {
+      console.error("Error in togglePlayPause:", error);
+    }
+  };
+
+  // Remplacer la fonction playTrack par cette version
   // Play a track
   const playTrack = async (track: Track) => {
     try {
+      console.log("=== PLAY TRACK CALLED ===");
       console.log("Playing track:", track.title);
       setIsLoading(true);
+
+      // Si c'est la même piste que celle en cours, juste reprendre la lecture
+      if (currentTrack && currentTrack.id === track.id && soundRef.current) {
+        console.log("Same track, resuming playback");
+        await resumeTrack();
+        setIsLoading(false);
+        return;
+      }
 
       // Unload previous sound
       if (soundRef.current) {
         console.log("Unloading previous sound");
         await soundRef.current.unloadAsync();
+        soundRef.current = null;
       }
 
       console.log("Creating new sound with URI:", track.uri);
@@ -417,7 +468,6 @@ export function useAudioPlayer() {
 
       soundRef.current = sound;
       setCurrentTrack(track);
-      updateNotification(track, true);
       setIsPlaying(true);
       startPositionUpdate();
 
@@ -435,11 +485,13 @@ export function useAudioPlayer() {
     }
   };
 
+  // Remplacer la fonction pauseTrack par cette version
   // Pause current track
   const pauseTrack = async () => {
+    console.log("=== PAUSE TRACK CALLED ===");
     if (soundRef.current) {
       try {
-        console.log("Pausing track");
+        console.log("Pausing track:", currentTrack?.title);
         await soundRef.current.pauseAsync();
         setIsPlaying(false);
 
@@ -452,14 +504,18 @@ export function useAudioPlayer() {
       } catch (error) {
         console.error("Error pausing track:", error);
       }
+    } else {
+      console.log("No sound reference to pause");
     }
   };
 
+  // Remplacer la fonction resumeTrack par cette version
   // Resume current track
   const resumeTrack = async () => {
+    console.log("=== RESUME TRACK CALLED ===");
     if (soundRef.current) {
       try {
-        console.log("Resuming track");
+        console.log("Resuming track:", currentTrack?.title);
         await soundRef.current.playAsync();
         setIsPlaying(true);
 
@@ -476,6 +532,8 @@ export function useAudioPlayer() {
       // If we have a track but no sound object, reload it
       console.log("No sound object, reloading track");
       await playTrack(currentTrack);
+    } else {
+      console.log("No track to resume");
     }
   };
 
@@ -638,5 +696,6 @@ export function useAudioPlayer() {
     deletePlaylist,
     addTrackToPlaylist,
     removeTrackFromPlaylist,
+    togglePlayPause, // Nouvelle fonction pour basculer entre lecture et pause
   };
 }

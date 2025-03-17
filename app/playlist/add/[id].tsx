@@ -14,18 +14,27 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 
 export default function AddToPlaylistScreen() {
-  const { playlistId } = useLocalSearchParams();
+  const { id } = useLocalSearchParams();
   const router = useRouter();
   const { tracks, playlists, addTrackToPlaylist } = useAudio();
   const [selectedTracks, setSelectedTracks] = useState<string[]>([]);
 
-  const playlist = playlists.find((p) => p.id === playlistId);
+  const playlist = playlists.find((p) => p.id === id);
 
   if (!playlist) {
     return (
       <View style={styles.container}>
         <StatusBar style="auto" />
-        <Text style={styles.title}>Playlist not found</Text>
+        <View style={styles.header}>
+          <TouchableOpacity
+            onPress={() => router.back()}
+            style={styles.backButton}
+          >
+            <Ionicons name="arrow-back" size={24} color="#333" />
+          </TouchableOpacity>
+          <Text style={styles.title}>Playlist not found</Text>
+          <View style={styles.placeholder} />
+        </View>
       </View>
     );
   }
@@ -143,6 +152,9 @@ const styles = StyleSheet.create({
   },
   backButton: {
     padding: 8,
+  },
+  placeholder: {
+    width: 40,
   },
   title: {
     fontSize: 18,

@@ -1,47 +1,34 @@
-import React, { createContext, useState, useContext, ReactNode } from "react";
+"use client";
 
-interface Track {
-  title: string;
-  artist: string;
-}
+import type React from "react";
+import { createContext, useContext } from "react";
+import { useAudioPlayer } from "@/hooks/useAudioPlayer";
 
-interface AudioContextType {
-  isPlaying: boolean;
-  currentTrack: Track | null;
-  playTrack: (track: Track) => void;
-  pauseTrack: () => void;
-}
+// Create a type for the context to avoid typing issues
+export type AudioContextType = ReturnType<typeof useAudioPlayer>;
 
+// Create the context with a proper initial value
 const AudioContext = createContext<AudioContextType | null>(null);
 
-interface AudioProviderProps {
-  children: ReactNode;
-}
-
-export const AudioProvider: React.FC<AudioProviderProps> = ({ children }) => {
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [currentTrack, setCurrentTrack] = useState<Track | null>(null);
-
-  const playTrack = (track: Track) => {
-    setCurrentTrack(track);
-    setIsPlaying(true);
-  };
-
-  const pauseTrack = () => {
-    setIsPlaying(false);
-  };
+// Create the provider component
+export function AudioProvider({ children }: { children: React.ReactNode }) {
+  const audioData = useAudioPlayer();
 
   return (
-    <AudioContext.Provider value={{ isPlaying, currentTrack, playTrack, pauseTrack }}>
-      {children}
-    </AudioContext.Provider>
+    <AudioContext.Provider value={audioData}>{children}</AudioContext.Provider>
   );
-};
+}
 
-export const useAudio = () => {
+// Custom hook to use the audio context
+export function useAudio() {
   const context = useContext(AudioContext);
-  if (!context) {
+
+  if (context === null) {
     throw new Error("useAudio must be used within an AudioProvider");
   }
+
   return context;
-};
+}
+
+// Re-export Track and Playlist types from useAudioPlayer
+export type { Track, Playlist } from "@/hooks/useAudioPlayer";

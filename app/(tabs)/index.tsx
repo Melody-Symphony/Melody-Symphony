@@ -9,7 +9,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
 } from "react-native";
-import { Track, useAudioPlayer } from "../../hooks/useAudioPlayer";
+import { useAudio, type Track } from "@/components/AudioContext";
 import TrackItem from "../../components/TrackItem";
 import { StatusBar } from "expo-status-bar";
 import { Ionicons } from "@expo/vector-icons";
@@ -18,13 +18,12 @@ export default function LibraryScreen() {
   const {
     tracks,
     loadTracks,
-    playTrack,
-    pauseTrack,
+    togglePlayPause,
     currentTrack,
     isPlaying,
     permissionGranted,
     isLoading,
-  } = useAudioPlayer();
+  } = useAudio();
 
   useEffect(() => {
     if (permissionGranted) {
@@ -33,13 +32,12 @@ export default function LibraryScreen() {
   }, [permissionGranted]);
 
   const handleTrackPress = (track: Track) => {
-    if (currentTrack?.id === track.id && isPlaying) {
-      // Si le morceau actuel est en lecture, alors on met en pause
-      pauseTrack();
-    } else {
-      // Si c'est un autre morceau ou si aucun morceau n'est en lecture, on commence la lecture
-      playTrack(track);
-    }
+    console.log("=== TRACK PRESSED IN LIBRARY ===");
+    console.log("Track:", track.title);
+    console.log("Is current track:", currentTrack?.id === track.id);
+    console.log("Is playing:", isPlaying);
+
+    togglePlayPause(track);
   };
 
   const handleRequestPermission = async () => {
@@ -108,12 +106,7 @@ export default function LibraryScreen() {
           data={tracks}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
-            <TrackItem
-              track={item}
-              isCurrentTrack={currentTrack?.id === item.id}
-              isPlaying={isPlaying && currentTrack?.id === item.id}
-              onPress={() => handleTrackPress(item)}
-            />
+            <TrackItem track={item} onPress={() => handleTrackPress(item)} />
           )}
           contentContainerStyle={styles.listContent}
         />

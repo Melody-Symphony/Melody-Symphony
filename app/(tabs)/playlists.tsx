@@ -1,43 +1,51 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, TextInput } from "react-native"
-import { Ionicons } from "@expo/vector-icons"
-import { useAudioPlayer } from "../../hooks/useAudioPlayer"
-import PlaylistItem from "../../components/PlaylistItem"
-import { useRouter } from "expo-router"
-import { StatusBar } from "expo-status-bar"
+import { useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  TouchableOpacity,
+  Alert,
+  TextInput,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { Playlist, useAudio } from "@/components/AudioContext";
+import PlaylistItem from "../../components/PlaylistItem";
+import { useRouter } from "expo-router";
+import { StatusBar } from "expo-status-bar";
 
 export default function PlaylistsScreen() {
-  const { playlists, createPlaylist } = useAudioPlayer()
-  const [isCreating, setIsCreating] = useState(false)
-  const [newPlaylistName, setNewPlaylistName] = useState("")
-  const router = useRouter()
+  const { playlists, createPlaylist } = useAudio();
+  const [isCreating, setIsCreating] = useState(false);
+  const [newPlaylistName, setNewPlaylistName] = useState("");
+  const router = useRouter();
 
   const handleCreatePlaylist = async () => {
     if (newPlaylistName.trim() === "") {
-      Alert.alert("Error", "Playlist name cannot be empty")
-      return
+      Alert.alert("Error", "Playlist name cannot be empty");
+      return;
     }
 
-    await createPlaylist(newPlaylistName)
-    setNewPlaylistName("")
-    setIsCreating(false)
-  }
+    await createPlaylist(newPlaylistName);
+    setNewPlaylistName("");
+    setIsCreating(false);
+  };
 
-  const handlePlaylistPress = (playlist) => {
-    router.push({
-      pathname: "/playlist/[id]",
-      params: { id: playlist.id },
-    })
-  }
+  const handlePlaylistPress = (playlist: Playlist) => {
+    router.push(`/playlist/${playlist.id}`);
+  };
 
   return (
     <View style={styles.container}>
       <StatusBar style="auto" />
       <View style={styles.header}>
         <Text style={styles.title}>Your Playlists</Text>
-        <TouchableOpacity style={styles.addButton} onPress={() => setIsCreating(true)}>
+        <TouchableOpacity
+          style={styles.addButton}
+          onPress={() => setIsCreating(true)}
+        >
           <Ionicons name="add" size={24} color="white" />
         </TouchableOpacity>
       </View>
@@ -55,14 +63,19 @@ export default function PlaylistsScreen() {
             <TouchableOpacity
               style={[styles.button, styles.cancelButton]}
               onPress={() => {
-                setIsCreating(false)
-                setNewPlaylistName("")
+                setIsCreating(false);
+                setNewPlaylistName("");
               }}
             >
               <Text style={styles.buttonText}>Cancel</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.button, styles.createButton]} onPress={handleCreatePlaylist}>
-              <Text style={styles.buttonText}>Create</Text>
+            <TouchableOpacity
+              style={[styles.button, styles.createButton]}
+              onPress={handleCreatePlaylist}
+            >
+              <Text style={[styles.buttonText, styles.createButtonText]}>
+                Create
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -71,18 +84,25 @@ export default function PlaylistsScreen() {
       {playlists.length === 0 ? (
         <View style={styles.emptyContainer}>
           <Text style={styles.emptyText}>No playlists yet</Text>
-          <Text style={styles.emptySubtext}>Create a playlist to organize your music</Text>
+          <Text style={styles.emptySubtext}>
+            Create a playlist to organize your music
+          </Text>
         </View>
       ) : (
         <FlatList
           data={playlists}
           keyExtractor={(item) => item.id}
-          renderItem={({ item }) => <PlaylistItem playlist={item} onPress={() => handlePlaylistPress(item)} />}
+          renderItem={({ item }) => (
+            <PlaylistItem
+              playlist={item}
+              onPress={() => handlePlaylistPress(item)}
+            />
+          )}
           contentContainerStyle={styles.listContent}
         />
       )}
     </View>
-  )
+  );
 }
 
 const styles = StyleSheet.create({
@@ -148,6 +168,9 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#6200ee",
   },
+  createButtonText: {
+    color: "white",
+  },
   listContent: {
     paddingBottom: 100, // Space for mini player
   },
@@ -167,5 +190,4 @@ const styles = StyleSheet.create({
     color: "#888",
     textAlign: "center",
   },
-})
-
+});
