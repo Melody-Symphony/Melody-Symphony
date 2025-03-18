@@ -1,4 +1,4 @@
-package com.musicplayer
+package com.melody
 
 import android.app.Application
 import android.content.res.Configuration

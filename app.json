@@ -5,12 +5,12 @@
     "owner": "manoalahatra",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/music.png",
+    "icon": "./assets/images/musique.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/music.png",
+      "image": "./assets/images/musique.png",
       "resizeMode": "contain",
-      "backgroundColor": "#6200ee"
+      "backgroundColor": "#EDE7F6"
     },
     "assetBundlePatterns": [
       "**/*"
@@ -25,12 +25,18 @@
       "bundleIdentifier": "com.mariatoavina.musicplayer"
     },
     "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/musique.png",
+        "backgroundColor": "#6200ee"
+      },
       "permissions": [
         "READ_EXTERNAL_STORAGE",
         "READ_MEDIA_AUDIO",
         "android.permission.READ_EXTERNAL_STORAGE",
         "android.permission.WRITE_EXTERNAL_STORAGE",
-        "android.permission.ACCESS_MEDIA_LOCATION"
+        "android.permission.ACCESS_MEDIA_LOCATION",
+        "android.permission.FOREGROUND_SERVICE",
+        "android.permission.POST_NOTIFICATIONS"
       ],
       "package": "com.mariatoavina.musicplayer"
     },
@@ -42,8 +48,17 @@
           "savePhotosPermission": "Allow $(PRODUCT_NAME) to save photos.",
           "isAccessMediaLocationEnabled": true
         }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/musique.png",
+          "color": "#6200ee",
+          "sounds": []
+        }
       ]
     ],
+    "owner": "mariatoavina",
     "extra": {
       "eas": {
         "projectId": "bd6755e2-d5f4-46a4-837c-a7f90df50469"

@@ -4,18 +4,11 @@ import { useState, useEffect, useRef } from "react";
 import { Audio } from "expo-av";
 import * as MediaLibrary from "expo-media-library";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { AppState, Platform } from "react-native";
-import * as Notifications from "expo-notifications";
-
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: false,
-    shouldPlaySound: false,
-    shouldSetBadge: false,
-    priority: Notifications.AndroidNotificationPriority.MAX,
-    sticky: true,
-  }),
-});
+import { AppState } from "react-native";
+import {
+  showMediaNotification,
+  setupNotificationResponseHandler,
+} from "@/services/notification-service";
 
 export interface Track {
   id: string;
@@ -48,6 +41,7 @@ export function useAudioPlayer() {
   const soundRef = useRef<Audio.Sound | null>(null);
   const positionUpdateInterval = useRef<NodeJS.Timeout | null>(null);
   const appStateRef = useRef(AppState.currentState);
+  const notificationResponseSubscription = useRef<any>(null);
 
   // Request permissions and setup audio
   useEffect(() => {
@@ -59,14 +53,15 @@ export function useAudioPlayer() {
         const { status } = await MediaLibrary.requestPermissionsAsync();
         console.log("Media library permission status:", status);
         setPermissionGranted(status === "granted");
-        
-        // Setup audio mode for background playback
+
         if (status === "granted") {
+          // Setup audio mode for background playback
           await Audio.setAudioModeAsync({
             allowsRecordingIOS: false,
             staysActiveInBackground: true,
             shouldDuckAndroid: true,
             playThroughEarpieceAndroid: false,
+            playsInSilentModeIOS: true,
           });
 
           console.log("Audio mode set for background playback");
@@ -94,13 +89,19 @@ export function useAudioPlayer() {
             setPlaybackPosition(lastPosition);
 
             // Show notification immediately for the last track
-            await setupNotifications();
             if (lastTrack) {
-              updateNotification(lastTrack, false);
+              showMediaNotification(lastTrack, false);
             }
-          } else {
-            await setupNotifications();
           }
+
+          // Set up notification response handler
+          notificationResponseSubscription.current =
+            setupNotificationResponseHandler(
+              resumeTrack,
+              pauseTrack,
+              playNextTrack,
+              playPreviousTrack
+            );
         }
       } catch (error) {
         console.error("Error during setup:", error);
@@ -126,8 +127,9 @@ export function useAudioPlayer() {
                 setPlaybackPosition(status.positionMillis);
                 setPlaybackDuration(status.durationMillis || 0);
 
+                // Update notification when app comes to foreground
                 if (currentTrack) {
-                  updateNotification(currentTrack, status.isPlaying);
+                  showMediaNotification(currentTrack, status.isPlaying);
                 }
               }
             })
@@ -137,7 +139,7 @@ export function useAudioPlayer() {
         nextAppState.match(/inactive|background/) &&
         appStateRef.current === "active"
       ) {
-        
+        // App has gone to the background
         console.log("App went to background");
         // Save current track and position
         if (currentTrack) {
@@ -160,6 +162,10 @@ export function useAudioPlayer() {
       console.log("Cleaning up audio player...");
       subscription.remove();
 
+      if (notificationResponseSubscription.current) {
+        notificationResponseSubscription.current.remove();
+      }
+
       if (positionUpdateInterval.current) {
         clearInterval(positionUpdateInterval.current);
       }
@@ -172,11 +178,19 @@ export function useAudioPlayer() {
     };
   }, []);
 
+  // Update notification when current track or playing state changes
+  useEffect(() => {
+    if (currentTrack) {
+      showMediaNotification(currentTrack, isPlaying);
+    }
+  }, [currentTrack, isPlaying]);
+
   // Extract basic metadata from filename
   const extractBasicMetadata = (filename: string) => {
-   
+    // Remove file extension
     const nameWithoutExt = filename.replace(/\.[^/.]+$/, "");
 
+    // Try to extract artist and title if in format "Artist - Title"
     const match = nameWithoutExt.match(/^(.*?)\s*-\s*(.*)$/);
 
     if (match) {
@@ -185,174 +199,12 @@ export function useAudioPlayer() {
         title: match[2].trim() || "Unknown Title",
       };
     }
+
+    // If no match, just use the filename as title
     return {
       artist: "Unknown Artist",
       title: nameWithoutExt || "Unknown Title",
     };
-  };
-
-  // Setup notifications for media controls
-  const setupNotifications = async () => {
-    try {
-      console.log("Setting up notifications...");
-
-      // Request notification permissions
-      const { status } = await Notifications.getPermissionsAsync();
-      if (status !== "granted") {
-        const { status: newStatus } =
-          await Notifications.requestPermissionsAsync();
-        console.log("Notification permission status:", newStatus);
-        setNotificationsEnabled(newStatus === "granted");
-      } else {
-        setNotificationsEnabled(true);
-      }
-
-      // Configure notification categories for media controls
-      if (Platform.OS === "ios") {
-        await Notifications.setNotificationCategoryAsync("playback", [
-          {
-            identifier: "play",
-            buttonTitle: "Play",
-            options: {
-              isDestructive: false,
-              isAuthenticationRequired: false,
-            },
-          },
-          {
-            identifier: "pause",
-            buttonTitle: "Pause",
-            options: {
-              isDestructive: false,
-              isAuthenticationRequired: false,
-            },
-          },
-          {
-            identifier: "next",
-            buttonTitle: "Next",
-            options: {
-              isDestructive: false,
-              isAuthenticationRequired: false,
-            },
-          },
-          {
-            identifier: "prev",
-            buttonTitle: "Previous",
-            options: {
-              isDestructive: false,
-              isAuthenticationRequired: false,
-            },
-          },
-        ]);
-      }
-
-      // Set up notification response handler
-      const subscription =
-        Notifications.addNotificationResponseReceivedListener((response) => {
-          const { actionIdentifier } = response;
-
-          console.log("Notification action received:", actionIdentifier);
-
-          switch (actionIdentifier) {
-            case "play":
-              resumeTrack();
-              break;
-            case "pause":
-              pauseTrack();
-              break;
-            case "next":
-              playNextTrack();
-              break;
-            case "prev":
-              playPreviousTrack();
-              break;
-            default:
-              break;
-          }
-        });
-
-      console.log("Notifications setup complete");
-
-      return () => {
-        subscription.remove();
-      };
-    } catch (error) {
-      console.error("Error setting up notifications:", error);
-      setNotificationsEnabled(false);
-    }
-  };
-
-  // Update notification with current track info
-  const updateNotification = async (track: Track, isPlaying: boolean) => {
-    try {
-      if (!notificationsEnabled) {
-        console.log("Notifications not enabled, skipping update");
-        return;
-      }
-
-      console.log(
-        "Updating notification for track:",
-        track.title,
-        "isPlaying:",
-        isPlaying
-      );
-
-      await Notifications.dismissAllNotificationsAsync();
-
-      
-      if (Platform.OS === "android") {
-        
-        await Notifications.scheduleNotificationAsync({
-          content: {
-            title: track.title || track.filename,
-            body: `${track.artist || "Unknown Artist"} • ${
-              track.album || "Unknown Album"
-            }`,
-            data: { trackId: track.id },
-            
-            actions: [
-              { id: "prev", title: "Previous", icon: "ic_prev" },
-              {
-                id: isPlaying ? "pause" : "play",
-                title: isPlaying ? "Pause" : "Play",
-                icon: isPlaying ? "ic_pause" : "ic_play",
-              },
-              { id: "next", title: "Next", icon: "ic_next" },
-            ],
-            
-            color: "#6200ee",
-            
-            priority: "max",
-         
-            sticky: true,
-            
-            ongoing: true,
-            
-            style: "media",
-            
-            ...(track.artwork && { largeIcon: track.artwork }),
-          },
-          trigger: null,
-        });
-      } else {
-        // iOS has more limitations
-        await Notifications.scheduleNotificationAsync({
-          content: {
-            title: track.title || track.filename,
-            body: `${track.artist || "Unknown Artist"} • ${
-              track.album || "Unknown Album"
-            }`,
-            data: { trackId: track.id },
-            categoryIdentifier: "playback",
-            sticky: true,
-          },
-          trigger: null,
-        });
-      }
-
-      console.log("Notification updated successfully");
-    } catch (error) {
-      console.error("Error updating notification:", error);
-    }
   };
 
   // Load tracks from device
@@ -536,7 +388,7 @@ export function useAudioPlayer() {
       await AsyncStorage.setItem("lastPlayingTrack", JSON.stringify(track));
 
       // Update notification immediately
-      updateNotification(track, true);
+      showMediaNotification(track, true);
 
       setIsLoading(false);
       console.log("Track playing successfully");
@@ -557,7 +409,7 @@ export function useAudioPlayer() {
 
         // Update notification
         if (currentTrack) {
-          updateNotification(currentTrack, false);
+          showMediaNotification(currentTrack, false);
         }
 
         console.log("Track paused successfully");
@@ -580,7 +432,7 @@ export function useAudioPlayer() {
 
         // Update notification
         if (currentTrack) {
-          updateNotification(currentTrack, true);
+          showMediaNotification(currentTrack, true);
         }
 
         console.log("Track resumed successfully");

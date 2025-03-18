@@ -1,4 +1,4 @@
-package com.musicplayer
+package com.melody
 
 import android.os.Build
 import android.os.Bundle

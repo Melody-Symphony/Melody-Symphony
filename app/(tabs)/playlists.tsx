@@ -11,7 +11,7 @@ import {
   TextInput,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { Playlist, useAudio } from "@/components/AudioContext";
+import { useAudio } from "@/components/AudioContext";
 import PlaylistItem from "../../components/PlaylistItem";
 import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
@@ -33,8 +33,11 @@ export default function PlaylistsScreen() {
     setIsCreating(false);
   };
 
-  const handlePlaylistPress = (playlist: Playlist) => {
-    router.push(`/playlist/${playlist.id}`);
+  const handlePlaylistPress = (playlist) => {
+    router.push({
+      pathname: "/playlist/[id]",
+      params: { id: playlist.id },
+    });
   };
 
   return (
@@ -73,9 +76,7 @@ export default function PlaylistsScreen() {
               style={[styles.button, styles.createButton]}
               onPress={handleCreatePlaylist}
             >
-              <Text style={[styles.buttonText, styles.createButtonText]}>
-                Create
-              </Text>
+              <Text style={styles.buttonText}>Create</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -160,16 +161,14 @@ const styles = StyleSheet.create({
   },
   cancelButton: {
     backgroundColor: "#f5f5f5",
+    color: "#6200ee",
   },
   createButton: {
     backgroundColor: "#6200ee",
+    color: "#fff",
   },
   buttonText: {
     fontWeight: "bold",
-    color: "#6200ee",
-  },
-  createButtonText: {
-    color: "white",
   },
   listContent: {
     paddingBottom: 100, // Space for mini player
