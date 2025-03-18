@@ -1,26 +1,16 @@
-"use client";
-
-import { Stack } from "expo-router";
-import { AudioProvider } from "@/components/AudioContext";
-import { useEffect } from "react";
-import {
-  setupNotificationChannels,
-  requestNotificationPermissions,
-} from "@/services/notification-service";
+import { Stack } from "expo-router"
+import { AudioProvider } from "@/components/AudioContext" 
 
 export default function RootLayout() {
-  useEffect(() => {
-    // Set up notification channels when the app starts
-    setupNotificationChannels();
-    requestNotificationPermissions();
-  }, []);
-
   return (
     <AudioProvider>
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="(tabs)" />
-        <Stack.Screen name="playlist" />
+      <Stack>
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="playlist/[id]" options={{ title: "Playlist" }} />
+        <Stack.Screen name="playlist/add-tracks" options={{ title: "Add Tracks" }} />
+        <Stack.Screen name="player" options={{ title: "Now Playing", headerShown: false }} />
       </Stack>
     </AudioProvider>
-  );
+  )
 }
+

@@ -1,30 +1,40 @@
 {
   "expo": {
     "name": "Melody",
-    "slug": "music-player",
+    "slug": "melody",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/music.png",
+    "icon": "./assets/images/musique.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/music.png",
+      "image": "./assets/images/musique.png",
       "resizeMode": "contain",
-      "backgroundColor": "#6200ee"
+      "backgroundColor": "#EDE7F6"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "infoPlist": {
-        "UIBackgroundModes": ["audio", "audio"]
+        "UIBackgroundModes": [
+          "audio"
+        ]
       },
       "bundleIdentifier": "com.mariatoavina.musicplayer"
     },
     "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/musique.png",
+        "backgroundColor": "#6200ee"
+      },
       "permissions": [
         "READ_EXTERNAL_STORAGE",
         "READ_MEDIA_AUDIO",
         "android.permission.READ_EXTERNAL_STORAGE",
         "android.permission.WRITE_EXTERNAL_STORAGE",
-        "android.permission.ACCESS_MEDIA_LOCATION"
+        "android.permission.ACCESS_MEDIA_LOCATION",
+        "android.permission.FOREGROUND_SERVICE",
+        "android.permission.POST_NOTIFICATIONS"
       ],
       "package": "com.mariatoavina.musicplayer"
     },
@@ -36,11 +46,20 @@
           "savePhotosPermission": "Allow $(PRODUCT_NAME) to save photos.",
           "isAccessMediaLocationEnabled": true
         }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/musique.png",
+          "color": "#6200ee",
+          "sounds": []
+        }
       ]
     ],
+    "owner": "mariatoavina",
     "extra": {
       "eas": {
-        "projectId": "2f9ca2e5-2262-497a-8739-e1e0e5e73e01"
+        "projectId": "84b4a938-3eed-41b4-b37b-e7983242652d"
       }
     }
   }
