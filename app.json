@@ -2,6 +2,7 @@
   "expo": {
     "name": "Melody",
     "slug": "music-player",
+    "owner": "manoalahatra",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/music.png",
@@ -11,10 +12,15 @@
       "resizeMode": "contain",
       "backgroundColor": "#6200ee"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "infoPlist": {
-        "UIBackgroundModes": ["audio", "audio"]
+        "UIBackgroundModes": [
+          "audio",
+          "audio"
+        ]
       },
       "bundleIdentifier": "com.mariatoavina.musicplayer"
     },
@@ -40,7 +46,7 @@
     ],
     "extra": {
       "eas": {
-        "projectId": "2f9ca2e5-2262-497a-8739-e1e0e5e73e01"
+        "projectId": "bd6755e2-d5f4-46a4-837c-a7f90df50469"
       }
     }
   }
